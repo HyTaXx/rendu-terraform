@@ -6,72 +6,72 @@ on:
   pull_request:
 
 jobs:
-  # lint-test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-  #     # Frontend lint & test
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: "20"
-  #     - run: |
-  #         cd frontend
-  #         npm ci
-  #         npm run lint
+      # Frontend lint & test
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: |
+          cd frontend
+          npm ci
+          # npm run lint
 
-  #     # Backend lint & test
-  #     - run: |
-  #         cd backend
-  #         npm ci
-  #         npm run lint
-  #         npm test
+      # Backend lint & test
+      - run: |
+          cd backend
+          npm ci
+          # npm run lint
+          # npm test
 
-  # build-frontend:
-  #   runs-on: ubuntu-latest
-  #   needs: lint-test
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Build frontend
-  #       run: |
-  #         cd frontend
-  #         npm ci
-  #         npm run build
+  build-frontend:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
 
-  # prepare-backend:
-  #   runs-on: ubuntu-latest
-  #   needs: lint-test
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Create .env for backend from secrets
-  #       run: |
-  #         cat <<EOF > backend/.env
-  #         NODE_ENV=development
-  #         PORT=3000
+  prepare-backend:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create .env for backend from secrets
+        run: |
+          cat <<EOF > backend/.env
+          NODE_ENV=development
+          PORT=3000
 
-  #         # Cosmos DB
-  #         COSMOS_ENDPOINT=${{ secrets.COSMOS_ENDPOINT }}
-  #         COSMOS_KEY=${{ secrets.COSMOS_KEY }}
-  #         COSMOS_DB=${{ secrets.COSMOS_DB }}
-  #         COSMOS_CONTAINER=${{ secrets.COSMOS_CONTAINER }}
-  #         COSMOS_PARTITION_KEY=${{ secrets.COSMOS_PARTITION_KEY }}
+          # Cosmos DB
+          COSMOS_ENDPOINT=${{ secrets.COSMOS_ENDPOINT }}
+          COSMOS_KEY=${{ secrets.COSMOS_KEY }}
+          COSMOS_DB=${{ secrets.COSMOS_DB }}
+          COSMOS_CONTAINER=${{ secrets.COSMOS_CONTAINER }}
+          COSMOS_PARTITION_KEY=${{ secrets.COSMOS_PARTITION_KEY }}
 
-  #         # Alerting
-  #         ALERT_THRESHOLD_24H=${{ secrets.ALERT_THRESHOLD_24H }}
-  #         ALERT_CHANNEL=${{ secrets.ALERT_CHANNEL }}
-  #         ALERT_EMAIL_TO=${{ secrets.ALERT_EMAIL_TO }}
+          # Alerting
+          ALERT_THRESHOLD_24H=${{ secrets.ALERT_THRESHOLD_24H }}
+          ALERT_CHANNEL=${{ secrets.ALERT_CHANNEL }}
+          ALERT_EMAIL_TO=${{ secrets.ALERT_EMAIL_TO }}
 
-  #         # External API
-  #         COINGECKO_API_TIER=${{ secrets.COINGECKO_API_TIER }}
-  #         COINGECKO_API_KEY=${{ secrets.COINGECKO_API_KEY }}
-  #         COINGECKO_BASE_URL=${{ secrets.COINGECKO_BASE_URL }}
-  #         EOF
+          # External API
+          COINGECKO_API_TIER=${{ secrets.COINGECKO_API_TIER }}
+          COINGECKO_API_KEY=${{ secrets.COINGECKO_API_KEY }}
+          COINGECKO_BASE_URL=${{ secrets.COINGECKO_BASE_URL }}
+          EOF
 
-  #     - name: Install backend dependencies
-  #       run: |
-  #         cd backend
-  #         npm ci
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
 
   terraform:
     runs-on: ubuntu-latest
