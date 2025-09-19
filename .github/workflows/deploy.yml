@@ -114,6 +114,5 @@ jobs:
           terraform init
           terraform validate
           
-          # Plus besoin d'importer le RG, on utilise une data source
           terraform plan -out=tfplan
           terraform apply -auto-approve tfplan

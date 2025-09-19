@@ -14,10 +14,6 @@ variable "cosmosdb_name" {
   default = "cryptocosmos123"
 }
 
-variable "terraform_state_sa_name" {
-  default = "cryptostatestorage"
-}
-
 variable "redis_name" {
   default = "crypto-redis-cache"
 }
