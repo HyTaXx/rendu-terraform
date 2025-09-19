@@ -3,7 +3,6 @@ const history = require('../services/history.service');
 const { shouldAlert, sendAlert } = require('../services/alert.service');
 
 async function run() {
-  console.log('Job fetch-and-store started');
   const list = await coingecko.getTop10WithTrend();
   await history.storeSnapshot(list);
 
