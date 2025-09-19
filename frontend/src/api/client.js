@@ -14,10 +14,9 @@ async function http(path, options = {}) {
 }
 
 export function getTopCryptos() {
-  return http('/cryptos')
+  return http('/api/cryptos')
 }
 
-export function getHistory(crypto) {
-  return http(`/history/${encodeURIComponent(crypto)}`)
+export function getHistory(coinId) {
+  return http(`/api/history/${encodeURIComponent(coinId)}`)
 }
-

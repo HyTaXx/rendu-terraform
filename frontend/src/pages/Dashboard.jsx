@@ -29,7 +29,7 @@ export default function Dashboard() {
     if (!selected) return
     let mounted = true
     setHistory([])
-    getHistory(selected.symbol || selected.id || selected.name)
+    getHistory(selected.id)
       .then((data) => {
         if (!mounted) return
         const series = Array.isArray(data) ? data : data?.data || []

@@ -5,11 +5,11 @@ function formatPercent(v) {
 
 export default function TopMovers({ data = [] }) {
   if (!data.length) return null
-  const sorted = [...data].sort((a, b) => Number(b.change24h ?? b.change ?? 0) - Number(a.change24h ?? a.change ?? 0))
+  const sorted = [...data].sort((a, b) => Number(b.price_change_percentage ?? 0) - Number(a.price_change_percentage ?? 0))
   const gainer = sorted[0]
   const loser = sorted[sorted.length - 1]
-  const gChange = Number(gainer?.change24h ?? gainer?.change ?? 0)
-  const lChange = Number(loser?.change24h ?? loser?.change ?? 0)
+  const gChange = Number(gainer?.price_change_percentage ?? 0)
+  const lChange = Number(loser?.price_change_percentage ?? 0)
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -30,4 +30,3 @@ export default function TopMovers({ data = [] }) {
     </div>
   )
 }
-

@@ -17,7 +17,9 @@ export default function CryptoTable({ data = [], onSelect }) {
     const q = query.trim().toLowerCase()
     if (!q) return data
     return data.filter((c) =>
-      String(c.name || '').toLowerCase().includes(q) || String(c.symbol || '').toLowerCase().includes(q)
+      String(c.name || '').toLowerCase().includes(q) ||
+      String(c.symbol || '').toLowerCase().includes(q) ||
+      String(c.id || '').toLowerCase().includes(q)
     )
   }, [data, query])
 
@@ -43,8 +45,8 @@ export default function CryptoTable({ data = [], onSelect }) {
           </thead>
           <tbody>
             {filtered.map((c) => {
-              const change = Number(c.change24h ?? c.change ?? 0)
-              const trend = c.trend || (change >= 0 ? 'Hausse 🚀' : 'Baisse 📉')
+              const change = Number(c.price_change_percentage ?? 0)
+              const trend = c.trend || (change >= 0 ? 'Hausse' : 'Baisse')
               return (
                 <tr key={c.id || c.symbol || c.name} className="border-t">
                   <td className="px-3 py-2">
@@ -52,14 +54,21 @@ export default function CryptoTable({ data = [], onSelect }) {
                       onClick={() => onSelect && onSelect(c)}
                       className="text-left font-medium text-blue-600 hover:underline"
                     >
-                      {c.name} {c.symbol ? <span className="text-gray-500">({c.symbol})</span> : null}
+                      <span className="inline-flex items-center gap-2">
+                        {c.image ? (
+                          <img src={c.image} alt="" className="h-5 w-5 rounded-full" />
+                        ) : null}
+                        <span>
+                          {c.name} {c.symbol ? <span className="text-gray-500">({c.symbol})</span> : null}
+                        </span>
+                      </span>
                     </button>
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(c.price ?? c.current_price)}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{formatCurrency(c.price)}</td>
                   <td className={`px-3 py-2 text-right tabular-nums ${change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {formatPercent(change)}
                   </td>
-                  <td className="px-3 py-2 text-right">{trend}</td>
+                  <td className="px-3 py-2 text-right">{trend} {trend === 'Hausse' ? '🚀' : '📉'}</td>
                 </tr>
               )
             })}
@@ -69,4 +78,3 @@ export default function CryptoTable({ data = [], onSelect }) {
     </div>
   )
 }
-

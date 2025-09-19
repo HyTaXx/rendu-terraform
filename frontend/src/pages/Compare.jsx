@@ -13,8 +13,8 @@ export default function Compare() {
     getTopCryptos().then((data) => {
       const arr = Array.isArray(data) ? data : data?.data || []
       setList(arr)
-      if (arr[0]) setA(arr[0].symbol || arr[0].id || arr[0].name)
-      if (arr[1]) setB(arr[1].symbol || arr[1].id || arr[1].name)
+      if (arr[0]) setA(arr[0].id)
+      if (arr[1]) setB(arr[1].id)
     }).catch(() => {})
   }, [])
 
@@ -43,7 +43,7 @@ export default function Compare() {
             <label className="mb-1 block text-sm text-gray-500">Crypto A</label>
             <select value={a} onChange={(e) => setA(e.target.value)} className="w-full rounded-md border bg-white px-3 py-2 text-sm dark:bg-gray-900">
               {list.map((c) => {
-                const val = c.symbol || c.id || c.name
+                const val = c.id
                 const label = `${c.name}${c.symbol ? ` (${c.symbol})` : ''}`
                 return <option key={val} value={val}>{label}</option>
               })}
@@ -53,7 +53,7 @@ export default function Compare() {
             <label className="mb-1 block text-sm text-gray-500">Crypto B</label>
             <select value={b} onChange={(e) => setB(e.target.value)} className="w-full rounded-md border bg-white px-3 py-2 text-sm dark:bg-gray-900">
               {list.map((c) => {
-                const val = c.symbol || c.id || c.name
+                const val = c.id
                 const label = `${c.name}${c.symbol ? ` (${c.symbol})` : ''}`
                 return <option key={val} value={val}>{label}</option>
               })}
@@ -72,4 +72,3 @@ export default function Compare() {
     </div>
   )
 }
-

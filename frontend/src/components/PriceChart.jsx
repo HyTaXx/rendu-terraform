@@ -2,7 +2,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Ca
 
 function normalizeHistory(series = []) {
   return series.map((p) => {
-    const t = p.date || p.time || p.timestamp || p.t || p[0]
+    const t = p.ts || p.date || p.time || p.timestamp || p.t || p[0]
     const price = p.price ?? p.close ?? p.value ?? p[1]
     const d = typeof t === 'number' ? new Date(t) : new Date(String(t))
     return { date: d, price: Number(price) }
@@ -44,4 +44,3 @@ export default function PriceChart({ title = 'Prix (7 jours)', series = [], seri
     </div>
   )
 }
-

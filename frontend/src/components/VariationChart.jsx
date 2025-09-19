@@ -2,7 +2,7 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 
 function normalize(series = []) {
   return series.map((p) => {
-    const t = p.date || p.time || p.timestamp || p.t || p[0]
+    const t = p.ts || p.date || p.time || p.timestamp || p.t || p[0]
     const price = Number(p.price ?? p.close ?? p.value ?? p[1])
     const d = typeof t === 'number' ? new Date(t) : new Date(String(t))
     return { date: d, price }
@@ -45,4 +45,3 @@ export default function VariationChart({ title = 'Variation quotidienne (7 jours
     </div>
   )
 }
-
