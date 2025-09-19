@@ -38,11 +38,9 @@ jobs:
           cd frontend
           npm ci
           npm run build
-      - name: Copy frontend build to k8s folder
+      - name: Archive frontend build
         run: |
-          rm -rf k8s/frontend
-          mkdir -p k8s/frontend
-          cp -r frontend/build/* k8s/frontend/
+          zip -r frontend-build.zip frontend/build
 
   prepare-backend:
     runs-on: ubuntu-latest
@@ -91,15 +89,3 @@ jobs:
           terraform validate
           terraform plan -out=tfplan
           terraform apply -auto-approve tfplan
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: terraform
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy manifests to AKS
-        run: |
-          # Copier backend & frontend dans AKS pod via kubectl
-          kubectl apply -f k8s/
-          kubectl rollout status deployment/crypto-frontend
-          kubectl rollout status deployment/crypto-backend
