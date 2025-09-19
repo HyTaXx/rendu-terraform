@@ -6,10 +6,8 @@ const fetchAndStore = require('./fetch-and-store.job');
 let tasks = [];
 
 function startScheduler() {
-  // ex: toutes les 5 minutes pour maj rapide
-  tasks.push(cron.schedule('*/1 * * * *', safe(fetchAndStore.run)));
-  // toutes les 10 min pour alerting si séparé
-  // tasks.push(cron.schedule('*/10 * * * *', safe(alerting.run)));
+  // ex: toutes les heures
+  tasks.push(cron.schedule('0 * * * *', safe(fetchAndStore.run)));
 
   tasks.forEach(t => t.start());
   logger.info('Scheduler started');
