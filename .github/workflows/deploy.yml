@@ -26,6 +26,7 @@ jobs:
           cd backend
           npm ci
           npm run lint
+          npm test
 
   build-frontend:
     runs-on: ubuntu-latest
