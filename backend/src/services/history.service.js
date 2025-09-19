@@ -1,6 +1,8 @@
 const { getContainer } = require('./cosmos.service');
 const { priceDoc } = require('../models/price.model');
 const coingecko = require('./coingecko.service');
+const cacheService = require('./cache.service');
+const logger = require('../config/logger');
 
 async function storeSnapshot(list) {
   const container = getContainer();
@@ -9,6 +11,12 @@ async function storeSnapshot(list) {
 }
 
 async function getHistory(coinId, days = 7) {
+  // Essayer de récupérer depuis le cache d'abord
+  const cached = await cacheService.getCryptoHistory(coinId, days);
+  if (cached) {
+    return cached;
+  }
+
   const container = getContainer();
   const ms = 86400000 * days;
   const since = Date.now() - ms;
@@ -21,13 +29,28 @@ async function getHistory(coinId, days = 7) {
     ]
   };
 
-  const { resources } = await container.items.query(query).fetchAll();
+  try {
+    const { resources } = await container.items.query(query).fetchAll();
 
-  if (resources.length > 0) return resources;
+    if (resources.length > 0) {
+      // Sauvegarder en cache pour 10 minutes
+      await cacheService.setCryptoHistory(coinId, days, resources, 600);
+      return resources;
+    }
 
-  // Fallback first run: fetch from API (requires mapping coinId->id)
-  const chart = await coingecko.getMarketChart(coinId, days);
-  return chart.prices.map(([ts, price]) => ({ coinId, price, ts }));
+    // Fallback first run: fetch from API (requires mapping coinId->id)
+    logger.info(`No history found in DB for ${coinId}, fetching from API`);
+    const chart = await coingecko.getMarketChart(coinId, days);
+    const fallbackData = chart.prices.map(([ts, price]) => ({ coinId, price, ts }));
+    
+    // Sauvegarder en cache pour 5 minutes (données de fallback)
+    await cacheService.setCryptoHistory(coinId, days, fallbackData, 300);
+    
+    return fallbackData;
+  } catch (error) {
+    logger.error(`Error fetching history for ${coinId}:`, error);
+    throw error;
+  }
 }
 
 module.exports = { storeSnapshot, getHistory };
