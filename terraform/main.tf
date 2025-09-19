@@ -1,10 +1,26 @@
+# Configuration Terraform simplifiée pour éviter les problèmes de quotas Azure
+
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.117.1"
+    }
+  }
+  required_version = ">= 1.0"
+}
+
+provider "azurerm" {
+  features {}
+}
+
 # Resource Group
 resource "azurerm_resource_group" "crypto_rg" {
   name     = var.resource_group_name
   location = var.location
 }
 
-# Storage Account pour Terraform state
+# Storage Account pour Terraform state et fichiers
 resource "azurerm_storage_account" "tfstate" {
   name                     = var.terraform_state_sa_name
   resource_group_name      = azurerm_resource_group.crypto_rg.name
@@ -13,50 +29,70 @@ resource "azurerm_storage_account" "tfstate" {
   account_replication_type = "LRS"
 }
 
-# Cosmos DB Account (SQL Core)
-resource "azurerm_cosmosdb_account" "crypto_cosmos" {
-  name                = var.cosmosdb_name
-  location            = azurerm_resource_group.crypto_rg.location
+# Container Registry
+resource "azurerm_container_registry" "crypto_acr" {
+  name                = var.acr_name
   resource_group_name = azurerm_resource_group.crypto_rg.name
-  offer_type          = "Standard"
-  kind                = "GlobalDocumentDB"
+  location            = azurerm_resource_group.crypto_rg.location
+  sku                 = "Basic"
+  admin_enabled       = true
+}
 
-  consistency_policy {
-    consistency_level = "Session"
+# App Service Plan (Linux)
+resource "azurerm_service_plan" "crypto_asp" {
+  name                = var.app_service_plan_name
+  resource_group_name = azurerm_resource_group.crypto_rg.name
+  location            = azurerm_resource_group.crypto_rg.location
+  os_type             = "Linux"
+  sku_name            = "B1"
+}
+
+# Backend App Service
+resource "azurerm_linux_web_app" "crypto_backend" {
+  name                = var.backend_app_name
+  resource_group_name = azurerm_resource_group.crypto_rg.name
+  location            = azurerm_service_plan.crypto_asp.location
+  service_plan_id     = azurerm_service_plan.crypto_asp.id
+
+  site_config {
+    always_on = false
+    
+    application_stack {
+      node_version = "18-lts"
+    }
   }
 
-  geo_location {
-    location          = var.location
-    failover_priority = 0
-    zone_redundant    = false
-  }
-
-  geo_location {
-    location          = "northeurope"
-    failover_priority = 1
-    zone_redundant    = false
+  app_settings = {
+    "NODE_ENV"                = "production"
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
+    "WEBSITES_PORT"          = "3000"
+    "SCM_DO_BUILD_DURING_DEPLOYMENT" = "true"
+    "ENABLE_ORYX_BUILD"      = "true"
+    
+    # Redis local/development (sans Azure Redis Cache)
+    "REDIS_URL"              = "redis://localhost:6379"
+    "USE_REDIS"              = "false"  # Désactivé pour cette version
+    
+    # Base de données fichier JSON (sans Cosmos DB)
+    "DATABASE_TYPE"          = "json"
+    "DATABASE_PATH"          = "/tmp/crypto-data.json"
+    
+    # API configuration
+    "COINGECKO_API_URL"      = "https://api.coingecko.com/api/v3"
+    "CACHE_TTL"              = "300"  # 5 minutes
+    
+    # Container Registry
+    "DOCKER_REGISTRY_SERVER_URL"      = azurerm_container_registry.crypto_acr.login_server
+    "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.crypto_acr.admin_username
+    "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.crypto_acr.admin_password
   }
 }
 
-# AKS Cluster
-resource "azurerm_kubernetes_cluster" "crypto_aks" {
-  name                = var.aks_name
-  location            = azurerm_resource_group.crypto_rg.location
+# Static Web App pour le frontend
+resource "azurerm_static_web_app" "crypto_frontend" {
+  name                = var.frontend_app_name
   resource_group_name = azurerm_resource_group.crypto_rg.name
-  dns_prefix          = "cryptoaks"
-
-  default_node_pool {
-    name       = "default"
-    node_count = 2
-    vm_size    = "Standard_B2s"
-  }
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  network_profile {
-    network_plugin   = "azure"
-    load_balancer_sku = "standard"
-  }
+  location            = azurerm_resource_group.crypto_rg.location
+  sku_tier            = "Free"
+  sku_size            = "Free"
 }
