@@ -22,8 +22,8 @@ data "azurerm_resource_group" "crypto_rg" {
 # Storage Account pour Terraform state et fichiers
 resource "azurerm_storage_account" "tfstate" {
   name                     = var.terraform_state_sa_name
-  resource_group_name      = data.data.azurerm_resource_group.crypto_rg.name
-  location                 = data.data.azurerm_resource_group.crypto_rg.location
+  resource_group_name      = data.azurerm_resource_group.crypto_rg.name
+  location                 = data.azurerm_resource_group.crypto_rg.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
