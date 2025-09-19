@@ -14,17 +14,16 @@ provider "azurerm" {
   features {}
 }
 
-# Resource Group
-resource "azurerm_resource_group" "crypto_rg" {
-  name     = var.resource_group_name
-  location = var.location
+# Resource Group - Référence à un groupe existant (pas géré par Terraform)
+data "azurerm_resource_group" "crypto_rg" {
+  name = var.resource_group_name
 }
 
 # Storage Account pour Terraform state et fichiers
 resource "azurerm_storage_account" "tfstate" {
   name                     = var.terraform_state_sa_name
-  resource_group_name      = azurerm_resource_group.crypto_rg.name
-  location                 = azurerm_resource_group.crypto_rg.location
+  resource_group_name      = data.data.azurerm_resource_group.crypto_rg.name
+  location                 = data.data.azurerm_resource_group.crypto_rg.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
@@ -32,8 +31,8 @@ resource "azurerm_storage_account" "tfstate" {
 # Container Registry
 resource "azurerm_container_registry" "crypto_acr" {
   name                = var.acr_name
-  resource_group_name = azurerm_resource_group.crypto_rg.name
-  location            = azurerm_resource_group.crypto_rg.location
+  resource_group_name = data.azurerm_resource_group.crypto_rg.name
+  location            = data.azurerm_resource_group.crypto_rg.location
   sku                 = "Basic"
   admin_enabled       = true
 }
@@ -41,8 +40,8 @@ resource "azurerm_container_registry" "crypto_acr" {
 # App Service Plan (Linux)
 resource "azurerm_service_plan" "crypto_asp" {
   name                = var.app_service_plan_name
-  resource_group_name = azurerm_resource_group.crypto_rg.name
-  location            = azurerm_resource_group.crypto_rg.location
+  resource_group_name = data.azurerm_resource_group.crypto_rg.name
+  location            = data.azurerm_resource_group.crypto_rg.location
   os_type             = "Linux"
   sku_name            = "B1"
 }
@@ -50,7 +49,7 @@ resource "azurerm_service_plan" "crypto_asp" {
 # Backend App Service
 resource "azurerm_linux_web_app" "crypto_backend" {
   name                = var.backend_app_name
-  resource_group_name = azurerm_resource_group.crypto_rg.name
+  resource_group_name = data.azurerm_resource_group.crypto_rg.name
   location            = azurerm_service_plan.crypto_asp.location
   service_plan_id     = azurerm_service_plan.crypto_asp.id
 
@@ -91,8 +90,8 @@ resource "azurerm_linux_web_app" "crypto_backend" {
 # Static Web App pour le frontend
 resource "azurerm_static_web_app" "crypto_frontend" {
   name                = var.frontend_app_name
-  resource_group_name = azurerm_resource_group.crypto_rg.name
-  location            = azurerm_resource_group.crypto_rg.location
+  resource_group_name = data.azurerm_resource_group.crypto_rg.name
+  location            = data.azurerm_resource_group.crypto_rg.location
   sku_tier            = "Free"
   sku_size            = "Free"
 }

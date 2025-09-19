@@ -2,7 +2,7 @@
 
 output "resource_group_name" {
   description = "Nom du Resource Group"
-  value       = azurerm_resource_group.crypto_rg.name
+  value       = data.azurerm_resource_group.crypto_rg.name
 }
 
 output "backend_app_url" {

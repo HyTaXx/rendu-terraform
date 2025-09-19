@@ -83,6 +83,12 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      # Login Azure CLI
+      - name: Azure CLI Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       # Initialiser et appliquer la configuration Terraform
       - name: Terraform Init & Apply
         env:
@@ -96,14 +102,13 @@ jobs:
           TF_VAR_tenant_id: ${{ secrets.ARM_TENANT_ID }}
         run: |
           cd terraform
+          
+          # Créer le Resource Group permanent s'il n'existe pas
+          az group create --name crypto-rg-clement-2024 --location westeurope || true
+          
           terraform init
           terraform validate
           
-          # Option: Détruire les ressources existantes d'abord (décommentez si nécessaire)
-          # az group delete --name crypto-rg-clement-2024 --yes --no-wait || true
-          
-          # Importer les ressources existantes si elles existent  
-          terraform import azurerm_resource_group.crypto_rg /subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/crypto-rg-clement-2024 || true
-          
+          # Plus besoin d'importer le RG, on utilise une data source
           terraform plan -out=tfplan
           terraform apply -auto-approve tfplan
