@@ -78,9 +78,22 @@ jobs:
     needs: [ build-frontend, prepare-backend ]
     steps:
       - uses: actions/checkout@v4
+
+      # Export des variables d'authentification Azure depuis les secrets GitHub
+      - name: Set Azure auth environment variables
+        run: |
+          export ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }}
+          export ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}
+          export ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}
+          export ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}
+
+      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-      - run: |
+
+      # Initialiser et appliquer la configuration Terraform
+      - name: Terraform Init & Apply
+        run: |
           cd terraform
           terraform init
           terraform validate
