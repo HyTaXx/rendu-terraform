@@ -18,7 +18,7 @@ app.get('/api/crypto/top', getTopCryptos);
 app.get('/api/crypto/:id/history', getHistory7d);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   res.status(500).json({ error: err.message });
 });
 
