@@ -1,0 +1,5 @@
+terraform/*
+!terraform/main.tf
+!terraform/outputs.tf
+!terraform/provider.tf
+!terraform/variables.tf
