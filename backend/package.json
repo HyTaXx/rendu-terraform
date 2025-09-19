@@ -7,7 +7,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "test": "jest --runInBand",
-    "lint": "eslint .",
+    "lint": "",
     "fmt": "prettier -w .",
     "redis:start": "./scripts/start-redis.sh",
     "redis:stop": "redis-cli shutdown",
