@@ -3,7 +3,12 @@ output "cosmos_endpoint" {
 }
 
 output "cosmos_primary_key" {
-  value     = azurerm_cosmosdb_account.crypto_cosmos.primary_master_key
+  value     = data.azurerm_cosmosdb_account_keys.crypto_keys.primary_master_key
+  sensitive = true
+}
+
+output "cosmos_secondary_key" {
+  value     = data.azurerm_cosmosdb_account_keys.crypto_keys.secondary_master_key
   sensitive = true
 }
 

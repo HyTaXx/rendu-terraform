@@ -60,3 +60,9 @@ resource "azurerm_kubernetes_cluster" "crypto_aks" {
     load_balancer_sku = "standard"
   }
 }
+
+# Récupération des clés Cosmos DB
+data "azurerm_cosmosdb_account_keys" "crypto_keys" {
+  name                = azurerm_cosmosdb_account.crypto_cosmos.name
+  resource_group_name = azurerm_resource_group.crypto_rg.name
+}
