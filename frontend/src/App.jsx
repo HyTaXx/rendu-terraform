@@ -1,34 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { Link, Outlet, NavLink } from 'react-router-dom'
+import ThemeToggle from './components/ThemeToggle'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="min-h-full">
+      <header className="border-b bg-white dark:bg-gray-900">
+        <nav className="mx-auto flex max-w-5xl items-center justify-between p-4">
+          <div className="text-xl font-semibold">
+            <Link to="/" className="hover:text-blue-600">
+              Crypto Dashboard
+            </Link>
+          </div>
+          <div className="flex items-center gap-3">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) => `text-gray-700 hover:text-blue-600 dark:text-gray-200 ${isActive ? 'font-semibold' : ''}`}
+            >
+              Dashboard
+            </NavLink>
+            <NavLink
+              to="/compare"
+              className={({ isActive }) => `text-gray-700 hover:text-blue-600 dark:text-gray-200 ${isActive ? 'font-semibold' : ''}`}
+            >
+              Comparer
+            </NavLink>
+            <ThemeToggle />
+          </div>
+        </nav>
+      </header>
+      <main className="mx-auto max-w-5xl p-6">
+        <Outlet />
+      </main>
+    </div>
   )
 }
 
