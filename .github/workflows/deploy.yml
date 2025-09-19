@@ -98,5 +98,12 @@ jobs:
           cd terraform
           terraform init
           terraform validate
+          
+          # Option: Détruire les ressources existantes d'abord (décommentez si nécessaire)
+          # az group delete --name crypto-rg-clement-2024 --yes --no-wait || true
+          
+          # Importer les ressources existantes si elles existent  
+          terraform import azurerm_resource_group.crypto_rg /subscriptions/${{ secrets.ARM_SUBSCRIPTION_ID }}/resourceGroups/crypto-rg-clement-2024 || true
+          
           terraform plan -out=tfplan
           terraform apply -auto-approve tfplan
