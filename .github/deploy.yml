@@ -1,0 +1,80 @@
+name: CI/CD Crypto Tracker
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Frontend lint & test
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: |
+          cd frontend
+          npm ci
+          npm run lint
+          npm test
+
+      # Backend lint & test (exemple Node.js)
+      - run: |
+          cd backend
+          npm ci
+          npm run lint
+          npm test
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+      - name: Docker build frontend
+        run: |
+          docker build -t ${{ secrets.REGISTRY }}/crypto-frontend:${{ github.sha }} -f frontend/Dockerfile .
+          echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin
+          docker push ${{ secrets.REGISTRY }}/crypto-frontend:${{ github.sha }}
+
+  build-backend:
+    runs-on: ubuntu-latest
+    needs: lint-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker build backend
+        run: |
+          docker build -t ${{ secrets.REGISTRY }}/crypto-backend:${{ github.sha }} -f backend/Dockerfile .
+          echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin
+          docker push ${{ secrets.REGISTRY }}/crypto-backend:${{ github.sha }}
+
+  terraform:
+    runs-on: ubuntu-latest
+    needs: [ build-frontend, build-backend ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      - run: terraform init
+      - run: terraform validate
+      - run: terraform plan -out=tfplan
+      - run: terraform apply -auto-approve tfplan
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: terraform
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy manifests
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout status deployment/crypto-frontend
+          kubectl rollout status deployment/crypto-backend
