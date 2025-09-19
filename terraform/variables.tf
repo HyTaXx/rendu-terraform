@@ -17,3 +17,8 @@ variable "cosmosdb_name" {
 variable "terraform_state_sa_name" {
   default = "cryptostatestorage"
 }
+
+variable "subscription_id" {}
+variable "client_id" {}
+variable "client_secret" {}
+variable "tenant_id" {}
