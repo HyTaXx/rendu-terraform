@@ -1,25 +1,46 @@
-provider "azurerm" {
-  features {}
-}
-
 # Resource Group
 resource "azurerm_resource_group" "crypto_rg" {
-  name     = "crypto-rg"
-  location = "northeurope"
+  name     = var.resource_group_name
+  location = var.location
 }
 
-# Azure Container Registry
-resource "azurerm_container_registry" "crypto_acr" {
-  name                     = "cryptoregistry123"
+# Storage Account pour Terraform state
+resource "azurerm_storage_account" "tfstate" {
+  name                     = var.terraform_state_sa_name
   resource_group_name      = azurerm_resource_group.crypto_rg.name
   location                 = azurerm_resource_group.crypto_rg.location
-  sku                      = "Basic"
-  admin_enabled            = true
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
 }
 
-# Azure Kubernetes Service
+# Cosmos DB Account (SQL Core)
+resource "azurerm_cosmosdb_account" "crypto_cosmos" {
+  name                = var.cosmosdb_name
+  location            = azurerm_resource_group.crypto_rg.location
+  resource_group_name = azurerm_resource_group.crypto_rg.name
+  offer_type          = "Standard"
+  kind                = "GlobalDocumentDB"
+
+  consistency_policy {
+    consistency_level = "Session"
+  }
+
+  geo_location {
+    location          = var.location
+    failover_priority = 0
+    zone_redundant    = false
+  }
+
+  geo_location {
+    location          = "northeurope"
+    failover_priority = 1
+    zone_redundant    = false
+  }
+}
+
+# AKS Cluster
 resource "azurerm_kubernetes_cluster" "crypto_aks" {
-  name                = "crypto-aks"
+  name                = var.aks_name
   location            = azurerm_resource_group.crypto_rg.location
   resource_group_name = azurerm_resource_group.crypto_rg.name
   dns_prefix          = "cryptoaks"
@@ -34,24 +55,8 @@ resource "azurerm_kubernetes_cluster" "crypto_aks" {
     type = "SystemAssigned"
   }
 
-  depends_on = [
-    azurerm_container_registry.crypto_acr
-  ]
-}
-
-# Cosmos DB Account
-resource "azurerm_cosmosdb_account" "crypto_cosmos" {
-  name                = "cryptocosmos123"
-  location            = azurerm_resource_group.crypto_rg.location
-  resource_group_name = azurerm_resource_group.crypto_rg.name
-  offer_type          = "Standard"
-  kind                = "GlobalDocumentDB"
-  enable_automatic_failover = true
-  consistency_policy {
-    consistency_level       = "Session"
-  }
-  geo_location {
-    location          = azurerm_resource_group.crypto_rg.location
-    failover_priority = 0
+  network_profile {
+    network_plugin = "azure"
+    load_balancer_sku = "standard"
   }
 }

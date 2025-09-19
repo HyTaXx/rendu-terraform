@@ -1,17 +1,19 @@
 variable "location" {
-  description = "Azure region"
-  type        = string
-  default     = "northeurope"
+  default = "westeurope"
 }
 
-variable "node_count" {
-  description = "Number of nodes in AKS cluster"
-  type        = number
-  default     = 2
+variable "resource_group_name" {
+  default = "crypto-rg"
 }
 
-variable "vm_size" {
-  description = "VM size for AKS nodes"
-  type        = string
-  default     = "Standard_B2s"
+variable "aks_name" {
+  default = "crypto-aks"
+}
+
+variable "cosmosdb_name" {
+  default = "cryptocosmos123"
+}
+
+variable "terraform_state_sa_name" {
+  default = "cryptostatestorage"
 }
