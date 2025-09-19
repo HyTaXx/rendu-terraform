@@ -38,9 +38,6 @@ jobs:
           cd frontend
           npm ci
           npm run build
-      - name: Archive frontend build
-        run: |
-          zip -r frontend-build.zip frontend/build
 
   prepare-backend:
     runs-on: ubuntu-latest
